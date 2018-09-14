@@ -1,0 +1,61 @@
+{
+  "name": "vscode-docker-ws",
+  "displayName": "Docker WorkSpace",
+  "description": "Open Folder in Docker container",
+  "version": "0.0.1",
+  "publisher": "tiibun",
+  "engines": {
+    "vscode": "^1.23.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "docker"
+  ],
+  "activationEvents": [
+    "onFileSystem:docker",
+    "onCommand:dockerws:addDockerFolder"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "dockerws:addDockerFolder",
+        "title": "Add Docker Folder To Workspace",
+        "category": "DockerWS"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "dockerws:addDockerFolder",
+          "group": "2_workspace",
+          "when": "workbenchState == workspace"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test",
+    "lint": "tslint --project tslint.json"
+  },
+  "devDependencies": {
+    "@types/dockerode": "^2.5.5",
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^8.10.25",
+    "@types/stream-buffers": "^3.0.2",
+    "eslint": "^5.5.0",
+    "tslint": "^5.8.0",
+    "typescript": "~2.8.0",
+    "vscode": "^1.1.21"
+  },
+  "dependencies": {
+    "dockerode": "^2.5.6",
+    "stream-buffers": "^3.0.2"
+  }
+}
