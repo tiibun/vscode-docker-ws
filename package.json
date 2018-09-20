@@ -6,6 +6,9 @@
   "description": "Open Folder in Docker container",
   "license": "MIT",
   "icon": "images/mono-moby.png",
+  "repository": {
+    "url": "https://github.com/tiibun/vscode-docker-ws.git"
+  },
   "engines": {
     "vscode": "^1.23.0"
   },
