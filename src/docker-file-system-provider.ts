@@ -94,7 +94,7 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
             }
         }
 
-        await dockerExec.echo(uri.authority, uri.path, content, options);
+        await dockerExec.echo(uri.authority, uri.path, content);
 
         if (options.create) {
             this.eventEmitter.fire([{ type: vscode.FileChangeType.Created, uri }]);

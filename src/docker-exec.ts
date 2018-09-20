@@ -83,7 +83,7 @@ export namespace dockerExec {
         return await container.exec('env', 'cat', path);
     }
 
-    export async function echo(containerId: string, path: string, content: Uint8Array, options: { create: boolean; overwrite: boolean; }): Promise<void> {
+    export async function echo(containerId: string, path: string, content: Uint8Array): Promise<void> {
         const container = getContainer(containerId);
         await container.exec('sh', '-c', `echo -n \"${content}\" > ${path}`);
     }
