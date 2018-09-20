@@ -1,9 +1,11 @@
 {
   "name": "vscode-docker-ws",
-  "displayName": "Docker WorkSpace",
-  "description": "Open Folder in Docker container",
   "version": "0.0.1",
   "publisher": "tiibun",
+  "displayName": "Docker WorkSpace",
+  "description": "Open Folder in Docker container",
+  "license": "MIT",
+  "icon": "images/mono-moby.png",
   "engines": {
     "vscode": "^1.23.0"
   },
