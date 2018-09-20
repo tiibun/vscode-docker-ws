@@ -177,7 +177,7 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
     /**
      * @inheritdoc
      */
-    public watch(uri: vscode.Uri, options: { recursive: boolean; excludes: string[]; }): vscode.Disposable {
+    public watch(_uri: vscode.Uri, _options: { recursive: boolean; excludes: string[]; }): vscode.Disposable {
         // ignore changed events
         return new vscode.Disposable(() => { });
     }
