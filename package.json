@@ -5,7 +5,7 @@
   "displayName": "Docker WorkSpace",
   "description": "Open Folder in Docker container",
   "license": "MIT",
-  "icon": "images/mono-moby.png",
+  "icon": "mono-moby.png",
   "repository": {
     "url": "https://github.com/tiibun/vscode-docker-ws.git"
   },
