@@ -5,7 +5,7 @@ import { DockerFileSystemProvider } from './docker-file-system-provider';
 import { Level, logging } from './utils/logging';
 
 export function activate(context: vscode.ExtensionContext) {
-    logging.init('Docker Workspace', Level.DEBUG);
+    logging.init('Docker Workspace', Level.INFO);
 
     // TODO: docker setting
     dockerClient.init();
