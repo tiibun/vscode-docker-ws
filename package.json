@@ -54,6 +54,7 @@
     "@types/mocha": "^2.2.42",
     "@types/node": "^8.10.25",
     "@types/stream-buffers": "^3.0.2",
+    "@types/uuid": "^3.4.4",
     "eslint": "^5.5.0",
     "tslint": "^5.8.0",
     "typescript": "~2.8.0",
@@ -61,6 +62,7 @@
   },
   "dependencies": {
     "dockerode": "^2.5.6",
-    "stream-buffers": "^3.0.2"
+    "stream-buffers": "^3.0.2",
+    "uuid": "^3.3.2"
   }
 }

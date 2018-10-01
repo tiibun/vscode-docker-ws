@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { Cache } from './utils/cache';
 import { detectFileType, FileStat } from './utils/filetype';
 import { dockerClient } from './docker-client';
+import { v4 as uuid } from 'uuid';
 
 export namespace dockerExec {
     const containerCache = new Cache<string, dockerClient.Container>();
@@ -85,7 +86,10 @@ export namespace dockerExec {
 
     export async function echo(containerId: string, path: string, content: Uint8Array): Promise<void> {
         const container = getContainer(containerId);
-        await container.exec('sh', '-c', `echo -n \"${content}\" > ${path}`);
+        const delimiter = uuid();
+        await container.exec('sh', '-c', `head -c -1 <<'${delimiter}' > '${path}'
+${content}
+${delimiter}`);
     }
 
     export async function rm(containerId: string, path: string, options: { recursive: boolean; }) {
