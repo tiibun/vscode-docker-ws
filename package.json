@@ -39,6 +39,16 @@
           "when": "workbenchState == workspace"
         }
       ]
+    },
+    "configuration": {
+      "title": "Docker WorkSpace",
+      "properties": {
+        "dockerWS.host": {
+          "type": "string",
+          "default": "",
+          "description": "Host to connect to (same as setting the DOCKER_HOST environment variable)"
+        }
+      }
     }
   },
   "scripts": {
