@@ -42,9 +42,15 @@ In Command Pallet[F1], paste and go following command
 ext install vscode-docker-ws
 ```
 
-## ToDo...
+## Configuration
 
-- Implement [Docker initial settings](https://github.com/apocas/dockerode#getting-started)
+### DockerWS: Host
+
+Remote Docker Host `host:port`
+
+If this is set to blank and Microsoft Docker Extension's `Docker: Host` is set, use the latter.
+
+If both are set to blank, use `DOCKER_HOST` environment variable.
 
 ## License
 
