@@ -1,6 +1,6 @@
 {
   "name": "vscode-docker-ws",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "tiibun",
   "displayName": "Docker WorkSpace",
   "description": "Open Folder in Docker container",
