@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.3.0
+- Change menu order.
+
 ## 0.2.0
 - Fix Windows cann't write a file. (#3)
 
