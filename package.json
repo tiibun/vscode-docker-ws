@@ -35,7 +35,8 @@
       "explorer/context": [
         {
           "command": "dockerws:addDockerFolder",
-          "group": "2_workspace@19"
+          "group": "2_workspace@11",
+          "when": "explorerResourceIsRoot && supportsWorkspaces"
         }
       ]
     },
