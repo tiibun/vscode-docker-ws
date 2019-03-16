@@ -20,7 +20,8 @@
   ],
   "activationEvents": [
     "onFileSystem:docker",
-    "onCommand:dockerws:addDockerFolder"
+    "onCommand:dockerws:addDockerFolder",
+    "onCommand:dockerws:openInTerminal"
   ],
   "main": "./out/extension",
   "contributes": {
@@ -28,6 +29,11 @@
       {
         "command": "dockerws:addDockerFolder",
         "title": "Add Docker Folder To Workspace",
+        "category": "DockerWS"
+      },
+      {
+        "command": "dockerws:openInTerminal",
+        "title": "Open in Terminal",
         "category": "DockerWS"
       }
     ],
@@ -37,6 +43,11 @@
           "command": "dockerws:addDockerFolder",
           "group": "2_workspace@11",
           "when": "explorerResourceIsRoot && supportsWorkspaces"
+        },
+        {
+          "command": "dockerws:openInTerminal",
+          "group": "navigation@30",
+          "when": "resourceScheme == docker"
         }
       ]
     },
@@ -47,6 +58,11 @@
           "type": "string",
           "default": "",
           "description": "Host to connect to (same as setting the DOCKER_HOST environment variable)"
+        },
+        "dockerWS.attachShellCommand.linuxContainer": {
+          "type": "string",
+          "default": "/bin/sh -c \"[ -e /bin/bash ] && /bin/bash || /bin/sh\"",
+          "description": "Open terminal command to use for Linux containers"
         }
       }
     }

@@ -1,28 +1,20 @@
-import * as vscode from 'vscode';
-import { Cache } from './utils/cache';
-import { detectFileType, FileStat } from './utils/filetype';
-import { dockerClient } from './docker-client';
 import { v4 as uuid } from 'uuid';
+import * as vscode from 'vscode';
+import { Container } from './docker/container';
+import { Containers } from './docker/containers';
+import { detectFileType, FileStat } from './utils/filetype';
 
-export namespace dockerExec {
-    const containerCache = new Cache<string, dockerClient.Container>();
-
-    function getContainer(id: string): dockerClient.Container {
-        return containerCache.getOrCreate(id, () =>
-            new dockerClient.Container(id)
-        );
-    }
-
+export namespace fileCommands {
     export async function readlink(containerId: string, path: string): Promise<string> {
-        const buf = await getContainer(containerId).exec('readlink', '-f', path);
+        const buf = await (await Containers.find(containerId)).exec('readlink', '-f', path);
         return buf.toString().trim();
     }
 
     const STAT_COMMAND = ['env', 'stat', '-c', '%n|%f|%s|%Z'];
 
-    export async function stat(container: string | dockerClient.Container, path: string, followSymlink: boolean = false, encoding: string = 'utf8'): Promise<FileStat> {
+    export async function stat(container: string | Container, path: string, followSymlink: boolean = false, encoding: string = 'utf8'): Promise<FileStat> {
         if (typeof container === 'string') {
-            container = getContainer(container);
+            container = await Containers.find(container);
         }
         let command = STAT_COMMAND;
         if (followSymlink) {
@@ -33,7 +25,7 @@ export namespace dockerExec {
     }
 
     export async function ls(containerId: string, path: string, encoding: string = 'utf8'): Promise<[string, vscode.FileType][]> {
-        const container = getContainer(containerId);
+        const container = await Containers.find(containerId);
 
         const lsOutput = await container.exec('env', 'ls', '-A', path);
 
@@ -56,7 +48,7 @@ export namespace dockerExec {
         return fileList;
     }
 
-    async function parseStat(container: dockerClient.Container, [name, mode, size, mtime]: string[]): Promise<FileStat> {
+    async function parseStat(container: Container, [name, mode, size, mtime]: string[]): Promise<FileStat> {
         let type = detectFileType(parseInt(mode, 16));
 
         if (type === vscode.FileType.SymbolicLink) {
@@ -75,17 +67,17 @@ export namespace dockerExec {
     }
 
     export async function mkdir(containerId: string, path: string): Promise<void> {
-        const container = getContainer(containerId);
+        const container = await Containers.find(containerId);
         await container.exec('env', 'mkdir', path);
     }
 
     export async function cat(containerId: string, path: string): Promise<Buffer> {
-        const container = getContainer(containerId);
+        const container = await Containers.find(containerId);
         return await container.exec('env', 'cat', path);
     }
 
     export async function echo(containerId: string, path: string, content: Uint8Array): Promise<void> {
-        const container = getContainer(containerId);
+        const container = await Containers.find(containerId);
         const delimiter = uuid();
         await container.exec('sh', '-c', `head -c -1 <<'${delimiter}' > '${path}'
 ${content}
@@ -93,7 +85,7 @@ ${delimiter}`);
     }
 
     export async function rm(containerId: string, path: string, options: { recursive: boolean; }) {
-        const container = getContainer(containerId);
+        const container = await Containers.find(containerId);
         const commands = ['env', 'rm', '-f'];
         if (options.recursive) {
             commands.push('-r');
@@ -102,7 +94,7 @@ ${delimiter}`);
     }
 
     export async function mv(containerId: string, oldPath: string, newPath: string, options: { overwrite: boolean; }) {
-        const container = getContainer(containerId);
+        const container = await Containers.find(containerId);
         const commands = ['env', 'mv'];
         if (options.overwrite) {
             commands.push('-f');
@@ -111,7 +103,7 @@ ${delimiter}`);
     }
 
     export async function cp(containerId: string, source: string, destination: string, options: { overwrite: boolean; }) {
-        const container = getContainer(containerId);
+        const container = await Containers.find(containerId);
         const commands = ['env', 'cp'];
         if (options.overwrite) {
             commands.push('-f');

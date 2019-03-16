@@ -1,14 +1,14 @@
-import * as Docker from 'dockerode';
 import { basename } from 'path';
 import * as vscode from 'vscode';
-import { dockerClient } from './docker-client';
-import { dockerExec } from './docker-exec';
-import { logging } from './utils/logging';
+import { Container } from '../docker/container';
+import { Containers } from '../docker/containers';
+import { fileCommands } from '../file-commands';
+import { logging } from '../utils/logging';
 
 export async function addDockerFolder(): Promise<void> {
-    let containers;
+    let containers: Container[];
     try {
-        containers = await dockerClient.listInfo();
+        containers = await Containers.listAll();
     } catch (err) {
         logging.error(err.message);
         vscode.window.showErrorMessage('Unable to connect to Docker.');
@@ -18,7 +18,7 @@ export async function addDockerFolder(): Promise<void> {
         vscode.window.showInformationMessage('There are no running Docker containers.');
         return;
     }
-    const container = await pickContainer(containers);
+    const container = await Containers.selectContainer(containers);
     if (!container) {
         return;
     }
@@ -28,8 +28,8 @@ export async function addDockerFolder(): Promise<void> {
     }
     let absPath;
     try {
-        absPath = await getAbsolutePath(container.Id, folderName);
-        if (!(await isDirectory(container.Id, absPath))) {
+        absPath = await getAbsolutePath(container.id, folderName);
+        if (!(await isDirectory(container.id, absPath))) {
             vscode.window.showErrorMessage(`${folderName} is not a directory.`);
             return;
         }
@@ -39,32 +39,21 @@ export async function addDockerFolder(): Promise<void> {
     }
 
     const start = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length || 0;
-    const uri = vscode.Uri.parse(`docker://${container.Id}${absPath}`);
+    const uri = vscode.Uri.parse(`docker://${container.id}${absPath}`);
 
     vscode.workspace.updateWorkspaceFolders(start, 0, {
         uri,
-        name: `${basename(folderName)} | ${container.Image} (${container.Names[0].substr(1)})`
+        name: `${basename(folderName)} | ${container.image} (${container.name.substr(1)})`
     });
 }
 
 async function getAbsolutePath(containerId: string, folderName: string): Promise<string> {
-    return await dockerExec.readlink(containerId, folderName);
+    return await fileCommands.readlink(containerId, folderName);
 }
 
 async function isDirectory(containerId: string, folderName: string): Promise<boolean> {
-    const fileStat = await dockerExec.stat(containerId, folderName);
+    const fileStat = await fileCommands.stat(containerId, folderName);
     return fileStat.isDirectory();
-}
-
-async function pickContainer(containers: Docker.ContainerInfo[]): Promise<Docker.ContainerInfo | undefined> {
-    const containerName = await vscode.window.showQuickPick(containers.map(
-        container => `${container.Image}(${container.Names[0]}:${container.Id.substr(0, 8)})`
-    ));
-    if (!containerName) {
-        return;
-    }
-    const [, id] = <string[]>containerName.match(/:([0-9a-f]{8})\)$/);
-    return containers.find(container => container.Id.startsWith(id));
 }
 
 async function inputPath(): Promise<string | undefined> {

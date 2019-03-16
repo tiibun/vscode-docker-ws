@@ -1,11 +1,22 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { dockerExec } from './docker-exec';
+import { Containers } from './docker/containers';
 import { DockerConnectionError } from './exceptions';
+import { fileCommands } from './file-commands';
 import { FileStat } from './utils/filetype';
 import { logging } from './utils/logging';
 
 export class DockerFileSystemProvider implements vscode.FileSystemProvider {
+    constructor() {
+        if (vscode.workspace.workspaceFolders) {
+            vscode.workspace.workspaceFolders
+                .filter(folder => folder.uri.scheme === 'docker')
+                .forEach(folder => {
+                    Containers.addWorkspaceContainer(folder.uri.authority);
+                });
+        }
+    }
+
     /**
      * @inheritdoc
      */
@@ -20,7 +31,7 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
     public async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
         logging.debug(`readDirectory ${uri.path}`);
         await this.statOrThrow(uri);
-        return await dockerExec.ls(uri.authority, uri.path);
+        return await fileCommands.ls(uri.authority, uri.path);
     }
 
     /**
@@ -34,16 +45,12 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
         }
 
         let parent = uri.with({ path: path.dirname(uri.path) });
-        const { fileNotFound, fileStat } = await this.statOrFileNotFound(parent);
-        if (fileStat) {
-            if (!fileStat.isWritable()) {
-                throw vscode.FileSystemError.NoPermissions(`${uri.path} is not writable.`);
-            }
-        } else {
+        const { fileNotFound, } = await this.statOrFileNotFound(parent);
+        if (fileNotFound) {
             throw fileNotFound;
         }
 
-        await dockerExec.mkdir(uri.authority, uri.path);
+        await fileCommands.mkdir(uri.authority, uri.path);
 
         this.eventEmitter.fire([
             { type: vscode.FileChangeType.Changed, uri: parent },
@@ -58,7 +65,7 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
         logging.debug(`readFile ${uri.path}`);
 
         await this.statOrThrow(uri);
-        return await dockerExec.cat(uri.authority, uri.path);
+        return await fileCommands.cat(uri.authority, uri.path);
     }
 
     /**
@@ -69,11 +76,7 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
 
         const { fileNotFound, fileStat } = await this.statOrFileNotFound(uri);
         if (fileStat) {
-            if (options.overwrite) {
-                if (!fileStat.isWritable()) {
-                    throw vscode.FileSystemError.NoPermissions(`${uri.path} is not writable.`);
-                }
-            } else {
+            if (!options.overwrite) {
                 throw vscode.FileSystemError.FileExists(`${uri.path} exists.`);
             }
         } else {
@@ -83,18 +86,14 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
         }
 
         let parent = uri.with({ path: path.dirname(uri.path) });
-        const { fileNotFound: parentFileNotFound, fileStat: parentFileStat } = await this.statOrFileNotFound(parent);
-        if (parentFileStat) {
-            if (!parentFileStat.isWritable()) {
-                throw vscode.FileSystemError.NoPermissions(`${parent.path} is not writable.`);
-            }
-        } else {
+        const { fileNotFound: parentFileNotFound, } = await this.statOrFileNotFound(parent);
+        if (parentFileNotFound) {
             if (options.create) {
                 throw parentFileNotFound;
             }
         }
 
-        await dockerExec.echo(uri.authority, uri.path, content);
+        await fileCommands.echo(uri.authority, uri.path, content);
 
         if (options.create) {
             this.eventEmitter.fire([{ type: vscode.FileChangeType.Created, uri }]);
@@ -108,7 +107,7 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
     public async delete(uri: vscode.Uri, options: { recursive: boolean; }): Promise<void> {
         logging.debug(`delete ${uri.path}`);
         await this.statOrThrow(uri);
-        await dockerExec.rm(uri.authority, uri.path, options);
+        await fileCommands.rm(uri.authority, uri.path, options);
 
         let parent = uri.with({ path: path.dirname(uri.path) });
         this.eventEmitter.fire([
@@ -134,7 +133,7 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
             }
         }
 
-        await dockerExec.mv(oldUri.authority, oldUri.path, newUri.path, options);
+        await fileCommands.mv(oldUri.authority, oldUri.path, newUri.path, options);
 
         this.eventEmitter.fire([
             { type: vscode.FileChangeType.Deleted, uri: oldUri },
@@ -159,7 +158,7 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
             }
         }
 
-        await dockerExec.cp(source.authority, source.path, destination.path, options);
+        await fileCommands.cp(source.authority, source.path, destination.path, options);
 
         this.eventEmitter.fire([
             { type: vscode.FileChangeType.Deleted, uri: source },
@@ -197,7 +196,7 @@ export class DockerFileSystemProvider implements vscode.FileSystemProvider {
 
     private async statOrFileNotFound(uri: vscode.Uri): Promise<{ fileNotFound?: vscode.FileSystemError, fileStat?: FileStat }> {
         try {
-            return { fileStat: await dockerExec.stat(uri.authority, uri.path) };
+            return { fileStat: await fileCommands.stat(uri.authority, uri.path) };
         } catch (err) {
             if (err instanceof DockerConnectionError) {
                 throw err;

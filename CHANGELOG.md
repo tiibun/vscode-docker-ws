@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.4.0
+- Add "Open in Terminal" context menu.
+- Do not check writable.(root can write files.)
+- Refactoring
+
 ## 0.3.0
 - Change menu order.
 

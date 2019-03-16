@@ -1,7 +1,7 @@
 import * as Docker from 'dockerode';
-import { DockerConnectionError } from './exceptions';
 import { IncomingMessage } from 'http';
 import { WritableStreamBuffer } from 'stream-buffers';
+import { DockerConnectionError } from './exceptions';
 import { logging } from './utils/logging';
 
 export namespace dockerClient {
@@ -29,10 +29,12 @@ export namespace dockerClient {
         }
     }
 
-    export class Container {
-        public constructor(private containerId: string) { }
+    export class Executor {
+        private container: Docker.Container;
 
-        private container: Docker.Container = docker.getContainer(this.containerId);
+        constructor(private id: string) {
+            this.container = docker.getContainer(id);
+        }
 
         /**
          *
@@ -40,7 +42,7 @@ export namespace dockerClient {
          * @throws [`DockerConnectionError`](./exceptions/DockerConnectionError)
          */
         public async exec(...commands: string[]): Promise<Buffer> {
-            logging.debug(() => `execute on ${this.containerId.substr(0, 8)} command: ${commands.map(
+            logging.debug(() => `execute on ${this.id.substr(0, 8)} command: ${commands.map(
                 c => c.length > 30 ? c.substr(0, 27).concat('...') : c
             ).join(' ')}`);
 
