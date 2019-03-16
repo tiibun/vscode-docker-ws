@@ -28,5 +28,5 @@ export class FileStat implements vscode.FileStat {
 
     isDirectory = () => hasType(this.type, vscode.FileType.Directory);
 
-    isWritable = () => hasMode(this.mode, 0o400 /* fs.constants.S_IWUSR */);
+    isWritable = () => hasMode(this.mode, 0o200 /* fs.constants.S_IWUSR */);
 }
