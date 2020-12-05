@@ -1,4 +1,8 @@
-# Docker FileSystem Extension for Visual Studio Code
+# Docker FileSystem Extension for Visual Studio Code (deprecated)
+
+**Note**: This extension has been deprecated in favor of the [Remote - Contaners](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+
+----
 
 This extension makes enabled to add folder inside a **running** docker using [FileSystemProvider API](https://code.visualstudio.com/docs/extensionAPI/vscode-api#FileSystemProvider) to workspace.
 
